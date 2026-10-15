@@ -146,7 +146,7 @@ Result on TradingView: not compiled yet. The script has to be compiled in the Pi
 - Sigma is estimated from V returns and has its own error, about 7% at V = 100, which the interval does not include.
 - The ATR (an RMA of 14 bars by default) and sigma (100 bars by default) react to a change of volatility at different speeds, so around a volatility shift the stop distance and the prediction are measured on different windows.
 - A hit is a touch of the high or the low. No fills, no slippage, no costs, and no order between the long and the short stop of one event.
-- Highs and lows carry the bid-ask bounce one way (the top trades at the ask, the bottom at the bid), closes do not; on thin symbols or low timeframes it inflates the ATR against sigma and the hits at tight stops.
+- Highs and lows carry the bid-ask bounce one way (the top trades at the ask, the bottom at the bid), closes with either sign; on thin symbols or low timeframes it inflates the ATR against sigma and the hits at tight stops.
 - The four rows share the same events, so they are not independent tests.
 - Standard candles only: Heikin Ashi, Renko and other synthetic bars change the highs, the lows and the closes the counts read.
 - Only bars loaded on the chart are counted, and the entries are spaced from the first ready bar, so history depth, symbol and timeframe change every count.

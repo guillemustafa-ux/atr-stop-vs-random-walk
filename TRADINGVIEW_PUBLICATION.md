@@ -35,7 +35,7 @@ LIMITATIONS
 - Sigma comes from 100 returns and has an error of about 7% of its own, which the interval does not include.
 - The ATR and sigma windows react to a change of volatility at different speeds.
 - A hit is a touch of the high or the low: no fills, slippage or costs, and no order between the long and the short stop.
-- Highs and lows carry the bid-ask bounce one way, closes do not; on thin symbols or low timeframes it inflates the ATR against sigma and the hits at tight stops.
+- Highs and lows carry the bid-ask bounce one way, closes with either sign; on thin symbols or low timeframes it inflates the ATR against sigma and the hits at tight stops.
 - Use standard candles; Heikin Ashi or Renko bars change the highs and lows.
 - Entries are spaced from the first loaded bar, so history depth, symbol and timeframe change the result. Counts, not a trading rule. Not financial advice.
 
