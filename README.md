@@ -2,6 +2,8 @@
 
 Open-source TradingView indicator (Pine Script v6) that places a long and a short stop at four ATR multiples from the close at regular, non-overlapping entries, counts how often the next N bars reach each one, and compares every hit rate with what a driftless random walk with the same volatility would give.
 
+Published on TradingView: https://www.tradingview.com/script/ATVajrIj-ATR-Stops-vs-a-Random-Walk-How-Often-Noise-Hits-Them/
+
 ## What it measures
 
 A stop k ATRs away is meant to sit outside the noise. How often noise alone reaches it has a closed form: for Brownian motion in log price with volatility sigma per bar, the chance of touching a level at log distance `d` within N bars is `2 * Phi(-d / (sigma * sqrt(N)))`, by the reflection principle. The indicator measures the real hit rate on the chart and puts that prediction next to it:
@@ -138,7 +140,19 @@ The bracketed column exists only in the simulation. The synthetic high and low a
 
 Three things to notice in the output. At 64 sub-steps the random walk sits 0.3 to 1.1 points below the formula, and that is enough for one row to read "hit less than a random walk" on a sample of 2,494 events: the discrete-watch formula, inside the interval on that row, shows the shortfall is the sub-steps', not the stop's. On a real chart the high and the low are the extremes of the traded prices, so this shortfall is negligible when a bar holds many trades; on thin symbols it returns, and the bid-ask bounce pushes the other way. The mean-reverting series is hit more than the formula at 1 ATR and far less at 3 ATRs. Part of it can be checked: mean reversion lowers the close-to-close sigma below the intrabar diffusion's, `Var(1-bar return) = sigma^2 * (1 - e^-theta) / theta`, 0.864 sigma^2 at theta = 0.3, a sigma of 0.929 times the diffusion's (the simulation measured 0.932). The formula takes sigma from closes, so it under-predicts the tight stop: with the diffusion's sigma the 1 ATR prediction is 75.0% instead of 73.2%, 1.8 of the 3.5 points, and the rest is not explained by sigma alone. At the wide stops the pull caps how far price strays: the stationary spread is `sigma / sqrt(2 theta)` = 1.29 diffusion sigmas, the 3 ATR stop sits about 4.3 diffusion sigmas from the entry, and even with the diffusion's sigma the formula gives 34.1% against the 10.5% measured. The fat-tailed series is hit 12 to 16 points less at every stop, and its ATR / sigma ratio of 0.92 flags it before any stop is read.
 
-Result on TradingView: not compiled yet. The script has to be compiled in the Pine Editor and read on BINANCE:BTCUSDT 1 hour before the numbers can be reported here.
+Result on TradingView, 2026-10-14, BINANCE:BTCUSDT 1 hour, default settings (ATR 14, stops 1, 1.5, 2 and 3 ATR, horizon 20, V 100): the script compiled, ran, and counted 24,434 confirmed bars and 1,216 events.
+
+| Stop | Long hit | Short hit | Pooled hit | 95% CI | Random walk | Difference | Verdict |
+|---|---|---|---|---|---|---|---|
+| 1 x ATR | 69.7% | 72.9% | 71.3% | 69.8% - 72.9% | 74.9% | -3.6 pts | hit less than a random walk |
+| 1.5 x ATR | 56.3% | 59.5% | 57.9% | 56.4% - 59.5% | 63.3% | -5.3 pts | hit less than a random walk |
+| 2 x ATR | 45.5% | 47.9% | 46.7% | 45.1% - 48.2% | 52.7% | -6.0 pts | hit less than a random walk |
+| 3 x ATR | 31.1% | 29.4% | 30.3% | 28.7% - 31.8% | 35.1% | -4.9 pts | hit less than a random walk |
+
+- Volatility: ATR 0.67% of price, sigma 0.47% per bar, ATR / sigma 1.43. Last event: entry 2026-10-13 16:00 UTC, close 83,383.41, ATR 478.18, low -1.63 ATR, high +1.60 ATR; the event opened on 2026-10-14 12:00 was still open and not counted.
+- Identities: 1,216 events in every row; the pooled rate is the mean of the long and the short rates ((69.7 + 72.9) / 2 = 71.3); the long, short and random-walk rates fall from one row to the next; difference = pooled minus random walk up to rounding; 0.67 / 0.47 = 1.43.
+- Controls run on screen: with Stop 1 at 0.1 the first row read 95.8% pooled against 97.4% for the random walk; with the horizon at 1 every row held 24,333 events and the rates were 12.1%, 4.9%, 2.3% and 0.7% pooled against 17.9%, 6.0%, 2.1% and 0.3% for the random walk. The hand check of the last event (step 5) was not run on screen; the simulation covers the rules.
+- On this chart, over 20 bars, every stop is hit 3.6 to 6.0 points less often than a random walk with the same close-to-close sigma would hit it, and the random-walk rate lies above the interval on every row. Over 1 bar the order flips at the far stops: 2 and 3 ATR moves within a single bar come slightly more often than the random walk predicts. The interval does not include the error of the sigma estimate (see Statistics), so read the size of the difference and not only the verdict.
 
 ## Limitations
 
