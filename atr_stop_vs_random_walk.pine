@@ -3,7 +3,8 @@ indicator("ATR Stops vs a Random Walk: How Often Noise Hits Them", shorttitle = 
 
 // ATR Stops vs a Random Walk
 // 1) Events: once the ATR and the volatility window are ready, an event starts at the close of a confirmed bar
-//    and lasts N bars (the horizon); the next one starts on the bar where it resolves, so events never overlap.
+//    and lasts N bars (the horizon); the next one can start on the bar where it resolves, never earlier, so
+//    events never overlap.
 //    Each event keeps its entry (the close), the ATR of the entry bar, ta.atr(length), and sigma, the sample
 //    standard deviation of the 1-bar log returns over the V bars that end at the entry bar. Both are known at
 //    the close of the entry bar.
@@ -24,7 +25,7 @@ k2 = input.float(1.5, "Stop 2 (x ATR)", minval = 0.01, step = 0.1, group = "Stop
 k3 = input.float(2.0, "Stop 3 (x ATR)", minval = 0.01, step = 0.1, group = "Stops", tooltip = "Multiple k of the ATR for the third row.")
 k4 = input.float(3.0, "Stop 4 (x ATR)", minval = 0.01, step = 0.1, group = "Stops", tooltip = "Multiple k of the ATR for the fourth row.")
 
-horizon = input.int(20, "Horizon N (bars)", minval = 1, maxval = 500, group = "Events", tooltip = "Bars after the entry on which the stops are checked: lows for the long stop, highs for the short stop. The next event starts on the bar where one resolves, so events never overlap.")
+horizon = input.int(20, "Horizon N (bars)", minval = 1, maxval = 500, group = "Events", tooltip = "Bars after the entry on which the stops are checked: lows for the long stop, highs for the short stop. A new event can start only once the open one has resolved, so events never overlap.")
 
 volLen = input.int(100, "Volatility window V (bars)", minval = 10, maxval = 500, group = "Random walk", tooltip = "sigma = sample standard deviation of the 1-bar log returns over the V bars that end at the entry bar. The random-walk prediction uses it as the volatility per bar.")
 
