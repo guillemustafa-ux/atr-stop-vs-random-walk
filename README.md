@@ -62,7 +62,7 @@ Consequences:
 | Header | Symbol, timeframe, ATR length, volatility window, horizon. |
 | Column titles | Stop, events, long hit, short hit, pooled hit, 95% CI, random walk, difference, verdict. |
 | One row per stop | The four `k` rows in input order. |
-| Volatility | Mean ATR as % of price, mean sigma per bar, their ratio, the Brownian reference 1.60, bars counted and events. |
+| Volatility | Mean ATR as % of price, mean sigma per bar, their ratio, the Brownian reference 1.60, confirmed bars and events. |
 | Last event | Entry time, close, ATR, the lowest low and the highest high of its N bars in ATRs from the entry ("low -1.84 ATR" means the long stops up to 1.84 x ATR were hit), and the open event that is not counted yet. |
 
 The footer reminds that the numbers are counts on confirmed bars and names the timezone of the dates (`syminfo.timezone`). Rates are shown with one decimal.
@@ -78,7 +78,7 @@ The footer reminds that the numbers are counts on confirmed bars and names the t
 
 1. Add the indicator to BINANCE:BTCUSDT on 1 hour from the Pine Editor and confirm it compiles without errors or warnings.
 2. Check the identities: no rate above 100%; the same number of events in every stop row; the pooled rate is the mean of the long and the short rates up to rounding; with the default ascending stops the long, the short and the random-walk rates never rise from one row to the next (a stop further away is reached only if the closer one was); "difference" equals pooled minus random walk up to rounding; ATR / sigma equals the ATR percentage over the sigma percentage up to rounding.
-3. Set Stop 1 to 0.1: the first row's pooled and random-walk rates must read near 100% (about 97% at N = 20 with a ratio near 1.6). Set it back to 1.
+3. Set Stop 1 to 0.1: the first row's pooled and random-walk rates must read near 100% (about 97% at N = 20 with a ratio near 1.6). Near 100% the normal interval is unreliable (zero width when every event hits), so the verdict on that row means nothing. Set it back to 1.
 4. Set the horizon to 1: every row must be small (the random walk gives about 11% at 1 ATR with a ratio of 1.6, and less further out), and there are about 20 times the events. Set it back to 20.
 5. Hand check the last event: find the circle at its entry time; over the next 20 bars, the lowest low minus the entry close, divided by the ATR in the row, must equal the "low" cell (0.00 when no low went below the entry), and the highest high minus the entry close, divided by the ATR, the "high" cell (0.00 when no high went above it).
 6. Compare with `tools/simulate_atr_stop.py`. The symbol differs, so the numbers will too; what carries over is how to read them. Output on 2026-10-14:
@@ -90,7 +90,7 @@ Random walk  (50000 bars, 64 sub-steps per bar, seed 11, ATR 14, sigma over 100 
   1.5 x ATR    2494     61.3%      61.7%       61.5%   60.6% - 62.4%         62.3%    -0.7 pts   like a random walk   [61.1%]
   2 x ATR      2494     49.4%      50.7%       50.1%   49.3% - 50.9%         51.2%    -1.1 pts   hit less than a random walk   [50.1%]
   3 x ATR      2494     31.1%      33.5%       32.3%   31.3% - 33.2%         32.6%    -0.3 pts   like a random walk   [31.8%]
-  Volatility  ATR 0.73% of price   sigma per bar 0.50%   ATR / sigma 1.46   (Brownian bar range 1.60)   50000 bars counted
+  Volatility  ATR 0.73% of price   sigma per bar 0.50%   ATR / sigma 1.46   (Brownian bar range 1.60)   50000 confirmed bars
 
 Random walk, few sub-steps  (50000 bars, 4 sub-steps per bar, seed 11, ATR 14, sigma over 100 bars, horizon 20)
   Stop       events  long hit  short hit  pooled hit   95% CI          random walk  difference   verdict   [discrete-watch formula]
@@ -98,7 +98,7 @@ Random walk, few sub-steps  (50000 bars, 4 sub-steps per bar, seed 11, ATR 14, s
   1.5 x ATR    2494     64.3%      67.6%       66.0%   65.0% - 66.9%         70.7%    -4.7 pts   hit less than a random walk   [65.9%]
   2 x ATR      2494     55.5%      59.2%       57.3%   56.5% - 58.2%         61.6%    -4.3 pts   hit less than a random walk   [57.1%]
   3 x ATR      2494     41.2%      43.5%       42.3%   41.5% - 43.2%         45.3%    -2.9 pts   hit less than a random walk   [41.5%]
-  Volatility  ATR 0.56% of price   sigma per bar 0.50%   ATR / sigma 1.12   (Brownian bar range 1.60)   50000 bars counted
+  Volatility  ATR 0.56% of price   sigma per bar 0.50%   ATR / sigma 1.12   (Brownian bar range 1.60)   50000 confirmed bars
 
 Mean-reverting  (50000 bars, 64 sub-steps per bar, seed 11, ATR 14, sigma over 100 bars, horizon 20)
   Stop       events  long hit  short hit  pooled hit   95% CI          random walk  difference   verdict   [discrete-watch formula]
@@ -106,7 +106,7 @@ Mean-reverting  (50000 bars, 64 sub-steps per bar, seed 11, ATR 14, sigma over 1
   1.5 x ATR    2494     57.0%      57.7%       57.4%   56.4% - 58.3%         60.8%    -3.4 pts   hit less than a random walk   [59.6%]
   2 x ATR      2494     37.7%      38.2%       37.9%   36.9% - 38.9%         49.4%   -11.5 pts   hit less than a random walk   [48.4%]
   3 x ATR      2494      9.9%      11.0%       10.5%   9.7% - 11.3%          30.5%   -20.1 pts   hit less than a random walk   [29.8%]
-  Volatility  ATR 0.71% of price   sigma per bar 0.47%   ATR / sigma 1.53   (Brownian bar range 1.60)   50000 bars counted
+  Volatility  ATR 0.71% of price   sigma per bar 0.47%   ATR / sigma 1.53   (Brownian bar range 1.60)   50000 confirmed bars
 
 Fat-tailed  (50000 bars, 64 sub-steps per bar, seed 11, ATR 14, sigma over 100 bars, horizon 20)
   Stop       events  long hit  short hit  pooled hit   95% CI          random walk  difference   verdict   [discrete-watch formula]
@@ -114,7 +114,7 @@ Fat-tailed  (50000 bars, 64 sub-steps per bar, seed 11, ATR 14, sigma over 100 b
   1.5 x ATR    2494     61.3%      58.7%       60.0%   59.1% - 60.9%         74.4%   -14.3 pts   hit less than a random walk   [73.1%]
   2 x ATR      2494     51.8%      49.6%       50.7%   49.8% - 51.7%         66.4%   -15.6 pts   hit less than a random walk   [65.2%]
   3 x ATR      2494     37.4%      35.4%       36.4%   35.4% - 37.5%         51.8%   -15.4 pts   hit less than a random walk   [50.8%]
-  Volatility  ATR 0.44% of price   sigma per bar 0.48%   ATR / sigma 0.92   (Brownian bar range 1.60)   50000 bars counted
+  Volatility  ATR 0.44% of price   sigma per bar 0.48%   ATR / sigma 0.92   (Brownian bar range 1.60)   50000 confirmed bars
 
 PASS  Phi approximation: max |Phi_A&S - Phi_erf| = 6.97e-08 over [-8, 8] (bound 7.5e-08)
 PASS  Random walk: identities (same events in every row; hits <= events; pooled = (long + short) / 2; hits and the random-walk rate never rise with k; ATR / sigma = ATR % / sigma %)
@@ -134,9 +134,9 @@ Expected sign: the mean-reverting series hits the wide stops less than the formu
 11 of 11 checks PASS.
 ```
 
-The bracketed column exists only in the simulation. The synthetic high and low are the extremes of 64 (or 4) points per bar, not of a continuous path, so they miss touches between the points and the measured rates fall below the formula. Broadie, Glasserman and Kou (1997, "A continuity correction for discrete barrier options", *Mathematical Finance* 7(4)) give the size of that shortfall: a path watched at steps of `dt` bars hits a level at distance `d` about as often as a continuous one hits a level at `d + 0.5826 * sigma * sqrt(dt)` (0.5826 = `-zeta(1/2) / sqrt(2 pi)`). The bracketed rate is the formula with that shift; it lands within 1.5 points of the measured rate on every row of both random walks, and the same shortfall explains why the simulated ATR / sigma ratio is 1.46 at 64 sub-steps and not 1.60: the expected range of a bar watched at M points is about `(1.596 - 1.165 / sqrt(M)) * sigma`, 1.45 at M = 64.
+The bracketed column exists only in the simulation. The synthetic high and low are the extremes of 64 (or 4) points per bar, not of a continuous path, so they miss touches between the points and the measured rates fall below the formula. Broadie, Glasserman and Kou (1997, "A continuity correction for discrete barrier options", *Mathematical Finance* 7(4)) give the size of that shortfall: a path watched at steps of `dt` bars hits a level at distance `d` about as often as a continuous one hits a level at `d + 0.5826 * sigma * sqrt(dt)` (0.5826 = `-zeta(1/2) / sqrt(2 pi)`). The bracketed rate is the formula with that shift; it lands within 1.5 points of the measured rate on every row of both random walks, and the same shortfall explains why the simulated ATR / sigma ratio is 1.46 at 64 sub-steps and not 1.60: the expected range of a bar watched at M points is about `(1.596 - 1.165 / sqrt(M)) * sigma`, about 1.45 at M = 64 (exact 1.456 by Spitzer's sum, `E[max] = sum over k = 1..M of E[S_k+] / k`).
 
-Three things to notice in the output. At 64 sub-steps the random walk sits 0.3 to 1.1 points below the formula, and that is enough for one row to read "hit less than a random walk" on a sample of 2,494 events: the discrete-watch formula, inside the interval on that row, shows the shortfall is the sub-steps', not the stop's. On a real chart the high and the low are the extremes of the traded prices, so this simulation shortfall does not apply there. The mean-reverting series is hit more than the formula at 1 ATR and far less at 3 ATRs. A likely reading: the tight stop is decided in the first bars, where the series still moves like a walk and the pull toward the mean adds to whichever side the entry is away from, while the wide stops need a straying the pull does not allow. The fat-tailed series is hit 12 to 16 points less at every stop, and its ATR / sigma ratio of 0.92 flags it before any stop is read.
+Three things to notice in the output. At 64 sub-steps the random walk sits 0.3 to 1.1 points below the formula, and that is enough for one row to read "hit less than a random walk" on a sample of 2,494 events: the discrete-watch formula, inside the interval on that row, shows the shortfall is the sub-steps', not the stop's. On a real chart the high and the low are the extremes of the traded prices, so this shortfall is negligible when a bar holds many trades; on thin symbols it returns, and the bid-ask bounce pushes the other way. The mean-reverting series is hit more than the formula at 1 ATR and far less at 3 ATRs. Part of it can be checked: mean reversion lowers the close-to-close sigma below the intrabar diffusion's, `Var(1-bar return) = sigma^2 * (1 - e^-theta) / theta`, 0.864 sigma^2 at theta = 0.3, a sigma of 0.929 times the diffusion's (the simulation measured 0.932). The formula takes sigma from closes, so it under-predicts the tight stop: with the diffusion's sigma the 1 ATR prediction is 75.0% instead of 73.2%, 1.8 of the 3.5 points, and the rest is not explained by sigma alone. At the wide stops the pull caps how far price strays: the stationary spread is `sigma / sqrt(2 theta)` = 1.29 diffusion sigmas, the 3 ATR stop sits about 4.3 diffusion sigmas from the entry, and even with the diffusion's sigma the formula gives 34.1% against the 10.5% measured. The fat-tailed series is hit 12 to 16 points less at every stop, and its ATR / sigma ratio of 0.92 flags it before any stop is read.
 
 Result on TradingView: not compiled yet. The script has to be compiled in the Pine Editor and read on BINANCE:BTCUSDT 1 hour before the numbers can be reported here.
 
@@ -146,6 +146,7 @@ Result on TradingView: not compiled yet. The script has to be compiled in the Pi
 - Sigma is estimated from V returns and has its own error, about 7% at V = 100, which the interval does not include.
 - The ATR (an RMA of 14 bars by default) and sigma (100 bars by default) react to a change of volatility at different speeds, so around a volatility shift the stop distance and the prediction are measured on different windows.
 - A hit is a touch of the high or the low. No fills, no slippage, no costs, and no order between the long and the short stop of one event.
+- Highs and lows carry the bid-ask bounce one way (the top trades at the ask, the bottom at the bid), closes do not; on thin symbols or low timeframes it inflates the ATR against sigma and the hits at tight stops.
 - The four rows share the same events, so they are not independent tests.
 - Standard candles only: Heikin Ashi, Renko and other synthetic bars change the highs, the lows and the closes the counts read.
 - Only bars loaded on the chart are counted, and the entries are spaced from the first ready bar, so history depth, symbol and timeframe change every count.
@@ -163,7 +164,7 @@ What the Pine Script v6 reference and user manual say about the built-ins the sc
 - `barstate.isconfirmed`: "Returns true if the script is calculating the last (closing) update of the current bar." All counters update inside it.
 - `table.new(position, columns, rows, ...)`: "it is wise to use table.new() in conjunction with either the var keyword (so the table object is only created on the first bar) or in an if barstate.islast block"; the script uses `var`. `table.merge_cells(...)`: "An attempt to merge a cell that has already been merged will result in an error", which is why the merges run once behind the `merged` flag.
 - `plotshape(series, title, style, location, color, offset, text, textcolor, editable, size, show_last, display, format, precision, force_overlay) → void`: styles include `shape.circle`, locations `location.belowbar`, sizes `size.tiny`; `display` takes `display.pane` among its values, which keeps the marker's value out of the status line; "Use plotshape() function in conjunction with 'overlay=true' indicator() parameter!"
-- `str.tostring(value, format)`: "The formatting of float values will also round those values when necessary ... To display trailing zeros, use '0' instead of '#'", so `"0.##"` prints the stop multiples without trailing zeros; with `format.mintick` "the value will be rounded to the nearest number that can be divided by syminfo.mintick". `str.format_time(time, format, timezone)` and `ticker.standard(symbol)` as in the reference examples.
+- `str.tostring(value, format)`: "The formatting of float values will also round those values when necessary ... To display trailing zeros, use '0' instead of '#'", so `"0.###"` prints the stop multiples with up to three decimals and no trailing zeros; with `format.mintick` "the value will be rounded to the nearest number that can be divided by syminfo.mintick". `str.format_time(time, format, timezone)` and `ticker.standard(symbol)` as in the reference examples.
 - Type system: "Comparison operators always return false if at least one operand is na", and using `na` directly as an operand of `==` is a compilation error; the script tests with `na()`. Migration guide to v6: "bool values can no longer be na", and "the and and or conditions are now evaluated lazily", with the fix "extract calls that rely on historical context to the global scope", which is why `ta.atr` and `ta.stdev` are called at the global scope on every bar and only their values are read inside the conditions.
 
 ## License
