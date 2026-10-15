@@ -174,13 +174,15 @@ fmtRate(float r) =>
 fmtCi(float p, float h) =>
     na(p) ? "n/a" : fmtRate(math.max(p - h, 0)) + " - " + fmtRate(math.min(p + h, 1))
 
-// "+1.2 pts" or "-1.2 pts" from a signed difference in percentage points, "n/a" when there is none.
+// "+1.2 pts" or "-1.2 pts" from a signed difference in percentage points, "0.0 pts" when it rounds to zero,
+// "n/a" when there is none.
 fmtPts(float v) =>
-    na(v) ? "n/a" : (v > 0 ? "+" : "") + str.tostring(v, "0.0") + " pts"
+    na(v) ? "n/a" : math.abs(v) < 0.05 ? "0.0 pts" : (v > 0 ? "+" : "") + str.tostring(v, "0.0") + " pts"
 
-// "+0.92" or "-1.84" from a signed number of ATRs, "n/a" when there is none.
+// "+0.92 ATR" or "-1.84 ATR" from a signed number of ATRs, "0.00 ATR" when it rounds to zero, "n/a" when there
+// is none.
 fmtAtr(float v) =>
-    na(v) ? "n/a" : (v > 0 ? "+" : "") + str.tostring(v, "0.00")
+    na(v) ? "n/a" : math.abs(v) < 0.005 ? "0.00 ATR" : (v > 0 ? "+" : "") + str.tostring(v, "0.00") + " ATR"
 
 // The bar's open time in the chart symbol's exchange time, "n/a" when there is none.
 fmtTime(int t) =>
@@ -216,7 +218,7 @@ if barstate.islast
         string verdict = nEv == 0 ? "not enough events yet" : rw < p - h ? "hit more than a random walk" : rw > p + h ? "hit less than a random walk" : "like a random walk"
         if nEv > 0 and nEv < 30
             verdict += " (small sample)"
-        setCell(0, 2 + i, str.tostring(array.get(ks, i), "0.##") + " x ATR", na, text.align_left)
+        setCell(0, 2 + i, str.tostring(array.get(ks, i), "0.###") + " x ATR", na, text.align_left)
         setCell(1, 2 + i, str.tostring(nEv, "#,##0"))
         setCell(2, 2 + i, fmtRate(pL))
         setCell(3, 2 + i, fmtRate(pS))
@@ -232,13 +234,13 @@ if barstate.islast
     setCell(2, 6, "sigma " + (na(sigPct) ? "n/a" : str.tostring(sigPct, "0.00") + "%") + " per bar")
     setCell(3, 6, "ATR / sigma " + (na(atrPct) ? "n/a" : str.tostring(atrPct / sigPct, "0.00")))
     setCell(4, 6, "Brownian bar 1.60")
-    setCell(5, 6, str.tostring(nBars, "#,##0") + " bars counted · " + str.tostring(nEv, "#,##0") + " events", na, text.align_left)
+    setCell(5, 6, str.tostring(nBars, "#,##0") + " confirmed bars · " + str.tostring(nEv, "#,##0") + " events", na, text.align_left)
     setCell(0, 7, "Last event", na, text.align_left)
     setCell(1, 7, "entry " + fmtTime(lastTime))
     setCell(2, 7, "close " + (na(lastEntry) ? "n/a" : str.tostring(lastEntry, format.mintick)))
     setCell(3, 7, "ATR " + (na(lastAtr) ? "n/a" : str.tostring(lastAtr, format.mintick)))
-    setCell(4, 7, "low " + fmtAtr(na(lastAtr) ? float(na) : (lastLow - lastEntry) / lastAtr) + " ATR")
-    setCell(5, 7, "high " + fmtAtr(na(lastAtr) ? float(na) : (lastHigh - lastEntry) / lastAtr) + " ATR")
+    setCell(4, 7, "low " + fmtAtr(na(lastAtr) ? float(na) : (lastLow - lastEntry) / lastAtr))
+    setCell(5, 7, "high " + fmtAtr(na(lastAtr) ? float(na) : (lastHigh - lastEntry) / lastAtr))
     setCell(6, 7, na(evBar) ? "no open event" : "open event from " + fmtTime(evTime) + ", not counted", na, text.align_left)
     setCell(0, 8, "Counts on confirmed bars. Not advice. Dates in the chart symbol's exchange time · " + syminfo.timezone, hdrBg, text.align_left)
     for c = 1 to 8

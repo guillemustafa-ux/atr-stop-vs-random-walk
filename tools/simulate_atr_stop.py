@@ -200,6 +200,11 @@ def pct(p):
     return f"{100.0 * p:.1f}%"
 
 
+def pts(v):
+    """Same template as fmtPts() in the Pine script: signed points, "0.0 pts" when it rounds to zero."""
+    return "0.0 pts" if abs(v) < 0.05 else f"{v:+.1f} pts"
+
+
 def report(name, rows, summ, substeps):
     print(f"{name}  ({summ['bars']} bars, {substeps} sub-steps per bar, seed {SEED}, ATR {ATR_LEN}, sigma over "
           f"{VOL_LEN} bars, horizon {HORIZON})")
@@ -209,9 +214,9 @@ def report(name, rows, summ, substeps):
         ci = f"{pct(max(r['p'] - r['half'], 0.0))} - {pct(min(r['p'] + r['half'], 1.0))}"
         label = f"{r['k']:g} x ATR"
         print(f"  {label:<10}{r['n']:>7}{pct(r['p_l']):>10}{pct(r['p_s']):>11}{pct(r['p']):>12}   {ci:<16}"
-              f"{pct(r['rw']):>11}{100 * (r['p'] - r['rw']):>+8.1f} pts   {verdict(r)}   [{pct(r['rw_disc'])}]")
+              f"{pct(r['rw']):>11}{pts(100 * (r['p'] - r['rw'])):>12}   {verdict(r)}   [{pct(r['rw_disc'])}]")
     print(f"  Volatility  ATR {summ['atr_pct']:.2f}% of price   sigma per bar {summ['sig_pct']:.2f}%   "
-          f"ATR / sigma {summ['ratio']:.2f}   (Brownian bar range {BROWNIAN_RANGE:.2f})   {summ['bars']} bars counted")
+          f"ATR / sigma {summ['ratio']:.2f}   (Brownian bar range {BROWNIAN_RANGE:.2f})   {summ['bars']} confirmed bars")
     print()
 
 
